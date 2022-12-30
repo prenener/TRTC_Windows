@@ -799,7 +799,7 @@ namespace TRTCCSharpDemo
                                 IntPtr ptr = GetHandleAndSetUserId(pos, userId, false);
                                 TRTCRenderParams renderParams = DataManager.GetInstance().GetRenderParams();
                                 mTRTCCloud.setRemoteRenderParams(userId, TRTCVideoStreamType.TRTCVideoStreamTypeBig, ref renderParams);
-                                
+
                                 mTRTCCloud.startRemoteView(userId, streamType, ptr);
                             }
                             else if (mRenderMode == 2)
@@ -945,8 +945,8 @@ namespace TRTCCSharpDemo
         private void OnLogCheckBoxClick(object sender, EventArgs e)
         {
             mLogLevel = mLogLevel == 0 ? 1 : 0;
-            
-            if(mLogLevel > 0)
+
+            if (mLogLevel > 0)
             {
                 this.logCheckBox.Checked = true;
             }
@@ -1259,7 +1259,7 @@ namespace TRTCCSharpDemo
                 this.startLocalAudioCheckBox.Checked = false;
                 return;
             }
-            
+
             if (this.startLocalAudioCheckBox.Checked)
             {
                 mTRTCCloud.startLocalAudio(DataManager.GetInstance().AudioQuality);
@@ -1387,7 +1387,7 @@ namespace TRTCCSharpDemo
 
         private void OnBgmCheckBoxClick(object sender, EventArgs e)
         {
-            if(Util.IsTestEnv())
+            if (Util.IsTestEnv())
             {
                 if (mAudioEffectOldForm == null)
                     mAudioEffectOldForm = new AudioEffectOldForm();
@@ -1401,7 +1401,7 @@ namespace TRTCCSharpDemo
                 mAudioEffectForm.ShowDialog();
                 this.bgmCheckBox.Checked = false;
             }
-           
+
         }
 
         private void OnBeautyLabelClick(object sender, EventArgs e)
@@ -1530,7 +1530,7 @@ namespace TRTCCSharpDemo
             Log.I(String.Format("onMicDidReady"));
             // 实时获取当前使用的麦克风设备信息
             if (mTRTCCloud != null)
-            mCurMicDevice = mDeviceManager.getCurrentDevice(TXMediaDeviceType.TXMediaDeviceTypeMic).getDevicePID();
+                mCurMicDevice = mDeviceManager.getCurrentDevice(TXMediaDeviceType.TXMediaDeviceTypeMic).getDevicePID();
         }
 
         public void onConnectionLost()
@@ -1898,7 +1898,7 @@ namespace TRTCCSharpDemo
         {
             SIZE thumbSize = new SIZE { cx = 120, cy = 70 };
             SIZE iconSize = new SIZE { cx = 20, cy = 20 };
-            return mTRTCCloud.getScreenCaptureSources(ref thumbSize,ref iconSize);
+            return mTRTCCloud.getScreenCaptureSources(ref thumbSize, ref iconSize);
         }
 
         public void StartAudioRecording(TRTCAudioRecordingParams param)
@@ -1987,19 +1987,19 @@ namespace TRTCCSharpDemo
             UInt32 length, UInt32 width, UInt32 height,
             TRTCVideoPixelFormat format)
         {
-            if(length <= 0)
+            if (length <= 0)
             {
                 return;
             }
 
             try
             {
-                if(string.IsNullOrWhiteSpace(userId))
+                if (string.IsNullOrWhiteSpace(userId))
                 {
                     userId = "local";
                 }
                 string str_type;
-                switch(type)
+                switch (type)
                 {
                     case TRTCVideoStreamType.TRTCVideoStreamTypeSub:
                         str_type = "_SubStream_";
@@ -2015,8 +2015,8 @@ namespace TRTCCSharpDemo
                         break;
                 }
 
-                Bitmap bitmap = new Bitmap((int)width,(int)height, System.Drawing.Imaging.PixelFormat.Format32bppRgb);
-                Rectangle rect = new Rectangle(0,0,(int)width,(int)height);
+                Bitmap bitmap = new Bitmap((int)width, (int)height, System.Drawing.Imaging.PixelFormat.Format32bppRgb);
+                Rectangle rect = new Rectangle(0, 0, (int)width, (int)height);
 
                 //将该位图存入内存中
                 System.Drawing.Imaging.BitmapData _data = bitmap.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadWrite, bitmap.PixelFormat);
@@ -2026,11 +2026,11 @@ namespace TRTCCSharpDemo
 
                 //保存图片
                 TimeSpan ts = DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0);
-                string fileName = AppDomain.CurrentDomain.BaseDirectory + 
+                string fileName = AppDomain.CurrentDomain.BaseDirectory +
                     userId + str_type + Convert.ToInt64(ts.TotalSeconds).ToString() + ".bmp";
                 bitmap.Save(fileName);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 MessageBox.Show(ex.ToString());
             }
@@ -2085,7 +2085,7 @@ namespace TRTCCSharpDemo
 
         private void VodPlayerLabel_Click(object sender, EventArgs e)
         {
-            if(mVodPlayerForm == null)
+            if (mVodPlayerForm == null)
                 mVodPlayerForm = new TXVodPlayerForm(this);
             mVodPlayerForm.Owner = this;
             mVodPlayerForm.Show();
@@ -2096,7 +2096,7 @@ namespace TRTCCSharpDemo
         {
             TRTCVideoStreamType streamType = TRTCVideoStreamType.TRTCVideoStreamTypeBig;
             TRTCSnapshotSourceType sourceType = TRTCSnapshotSourceType.TRTCSnapshotSourceTypeStream;
-            mTRTCCloud.snapshotVideo("",streamType,sourceType);
+            mTRTCCloud.snapshotVideo("", streamType, sourceType);
         }
         private void RecordLabel_Click(object sender, EventArgs e)
         {
@@ -2125,7 +2125,7 @@ namespace TRTCCSharpDemo
         /// </summary>
         public bool StartLocalRecord(string path)
         {
-            if(mScreenCaptureSourceInfo == null)
+            if (mScreenCaptureSourceInfo == null)
             {
                 return false;
             }
@@ -2177,6 +2177,16 @@ namespace TRTCCSharpDemo
         public void onDeviceChange(string deviceId, TXMediaDeviceType type, TRTCDeviceState state)
         {
             // 推荐使用 onDeviceChanged
+        }
+
+        public void onSpeedTestResult(TRTCSpeedTestResult result)
+        {
+            Log.I(String.Format(@"onSpeedTestResult : currentResult.ip = {0}, currentResult.quality = {1}, 
+                currentResult.upLostRate = {2}, currentResult.downLostRate = {3}, currentResult.rtt = {4}", 
+                result.ip, 
+                result.quality, 
+                result.upLostRate,
+                result.downLostRate, result.rtt));
         }
     }
 }
