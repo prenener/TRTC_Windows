@@ -29,7 +29,7 @@ namespace TRTCCSharpDemo
     {
         private ITRTCCloud mTRTCCloud;
         private ITXDeviceManager mDeviceManager;
-        //private ITXLiteAVLocalRecord mLiteAVLocalRecord;
+        private ITXLiteAVLocalRecord mLiteAVLocalRecord;
 
         // 渲染模式：
         // 1 为真窗口渲染（通过窗口句柄传入 SDK），2 为自定义渲染（使用 TXLiteAVVideoView 渲染）
@@ -88,7 +88,7 @@ namespace TRTCCSharpDemo
             mTRTCCloud = DataManager.GetInstance().trtcCloud;
             mDeviceManager = mTRTCCloud.getDeviceManager();
             mDeviceManager.setDeviceObserver(this);
-            //mLiteAVLocalRecord = DataManager.GetInstance().txLiteAVLocalRecord;
+            mLiteAVLocalRecord = DataManager.GetInstance().txLiteAVLocalRecord;
             mMixStreamVideoMeta = new List<UserVideoMeta>();
             mRemoteUsers = new List<RemoteUserInfo>();
             mPKUsers = new List<PKUserInfo>();
@@ -2129,8 +2129,11 @@ namespace TRTCCSharpDemo
             {
                 return false;
             }
+            RecordConfig recordConfig = new RecordConfig();
+            recordConfig.filePath = path;
+            recordConfig.maxSingleFileSize = 30000;
             RECT rect = new RECT();
-            //mLiteAVLocalRecord.startLocalRecord(ref mScreenCaptureSourceInfo, ref rect, path);
+            mLiteAVLocalRecord.startLocalRecord(ref recordConfig, mScreenCaptureSourceInfo.type, mScreenCaptureSourceInfo.sourceId, ref rect);
             return true;
         }
 
@@ -2141,17 +2144,19 @@ namespace TRTCCSharpDemo
 
         public void StopLocalRecord()
         {
-            //mLiteAVLocalRecord.stopLocalRecord();
+            mLiteAVLocalRecord.stopLocalRecord();
         }
 
-        public void PauseLocalRecord()
+        public void StartLocalRecordVolum ()
         {
-            //mLiteAVLocalRecord.pauseLocalRecord();
+            mLiteAVLocalRecord.enableRecordMicrophone(true);
+            mLiteAVLocalRecord.enableRecordSystemAudio(true);
         }
 
-        public void resumeLocalRecord()
+        public void StopLocalRecordVolum()
         {
-            //mLiteAVLocalRecord.resumeLocalRecord();
+            mLiteAVLocalRecord.enableRecordMicrophone(false);
+            mLiteAVLocalRecord.enableRecordSystemAudio(false);
         }
 
         public void onDeviceChanged(string deviceId, TXMediaDeviceType type, TXMediaDeviceState state)
@@ -2187,6 +2192,26 @@ namespace TRTCCSharpDemo
                 result.quality, 
                 result.upLostRate,
                 result.downLostRate, result.rtt));
+        }
+
+        public void onStartPublishMediaStream(string taskId, int code, string message, IntPtr extraInfo)
+        {
+
+        }
+
+        public void onUpdatePublishMediaStream(string taskId, int code, string message, IntPtr extraInfo)
+        {
+
+        }
+
+        public void onStopPublishMediaStream(string taskId, int code, string message, IntPtr extraInfo)
+        {
+
+        }
+
+        public void onCdnStreamStateChanged(string cdnUrl, int status, int code, string msg, IntPtr extraInfo)
+        {
+
         }
     }
 }

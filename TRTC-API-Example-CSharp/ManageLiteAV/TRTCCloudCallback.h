@@ -32,6 +32,7 @@ typedef void (CALLBACK* PFN_CONNECTIONLOST)();
 typedef void (CALLBACK* PFN_TRYTORECONNECT)();
 typedef void (CALLBACK* PFN_CONNECTIONRECOVERY)();
 typedef void (CALLBACK* PFN_SPEEDTEST)(const TRTCSpeedTestResult& currentResult, unsigned int finishedCount, unsigned int totalCount);
+typedef void (CALLBACK* PFN_SPEEDTESTRESULT)(const TRTCSpeedTestResult& result);
 typedef void (CALLBACK* PFN_CAMERADIDREADY)();
 typedef void (CALLBACK* PFN_MICDIDREADY)();
 typedef void (CALLBACK* PFN_DEVICECHANGE)(const char* deviceId, TRTCDeviceType type, TRTCDeviceState state);
@@ -47,6 +48,10 @@ typedef void (CALLBACK* PFN_STOPPUBLISHING)(int errCode, const char* errMsg);
 typedef void (CALLBACK* PFN_STARTPUBLISHCDNSTREAM)(int errCode, const char* errMsg);
 typedef void (CALLBACK* PFN_STOPPUBLISHCDNSTREAM)(int errCode, const char* errMsg);
 typedef void (CALLBACK* PFN_SETMIXTRANSCODINGCONFIG)(int errCode, const char* errMsg);
+typedef void (CALLBACK* PFN_STARTPUBLISHMEDIASTREAM)(const char* taskId, int code, const char* message, void* extraInfo);
+typedef void (CALLBACK* PFN_UPDATEPUBLISHMEDIASTREAM)(const char* taskId, int code, const char* message, void* extraInfo);
+typedef void (CALLBACK* PFN_STOPPUBLISHMEDIASTREAM)(const char* taskId, int code, const char* message, void* extraInfo);
+typedef void (CALLBACK* PFN_CDNSTREAMSTATECHANGED)(const char* cdnUrl, int status, int code, const char* msg, void* extraInfo);
 typedef void (CALLBACK* PFN_AUDIOEFFECTFINISHED)(int effectId, int code);
 typedef void (CALLBACK* PFN_SCREENCAPTURECOVERED)();
 typedef void (CALLBACK* PFN_SCREENCAPTURESTARTED)();
@@ -207,6 +212,8 @@ public:
     void setConnectionRecovery(PFN_CONNECTIONRECOVERY pointer);
 
     void setSpeedTest(PFN_SPEEDTEST pointer);
+    
+    void setSpeedTestResult(PFN_SPEEDTESTRESULT pointer);
 
     void setCameraDidReady(PFN_CAMERADIDREADY pointer);
 
@@ -237,6 +244,14 @@ public:
     void setStopPublishCDNStream(PFN_STOPPUBLISHCDNSTREAM pointer);
 
     void setSetMixTranscodingConfig(PFN_SETMIXTRANSCODINGCONFIG pointer);
+
+    void setStartPublishMediaStream(PFN_STARTPUBLISHMEDIASTREAM pointer);
+
+    void setUpdatePublishMediaStream(PFN_UPDATEPUBLISHMEDIASTREAM pointer);
+
+    void setStopPublishMediaStream(PFN_STOPPUBLISHMEDIASTREAM pointer);
+
+    void setCdnStreamStateChanged(PFN_CDNSTREAMSTATECHANGED pointer);
 
     void setAudioEffectFinished(PFN_AUDIOEFFECTFINISHED pointer);
 
@@ -318,6 +333,8 @@ public:
 
     virtual void onSpeedTest(const TRTCSpeedTestResult& currentResult, unsigned int finishedCount, unsigned int totalCount);
 
+    virtual void onSpeedTestResult(const TRTCSpeedTestResult& result);
+
     virtual void onCameraDidReady();
 
     virtual void onMicDidReady();
@@ -347,6 +364,14 @@ public:
     virtual void onStopPublishCDNStream(int errCode, const char* errMsg);
 
     virtual void onSetMixTranscodingConfig(int errCode, const char* errMsg);
+
+    virtual void onStartPublishMediaStream(const char* taskId, int code, const char* message, void* extraInfo);
+
+    virtual void onUpdatePublishMediaStream(const char* taskId, int code, const char* message, void* extraInfo);
+
+    virtual void onStopPublishMediaStream(const char* taskId, int code, const char* message, void* extraInfo);
+
+    virtual void onCdnStreamStateChanged(const char* cdnUrl, int status, int code, const char* msg, void* extraInfo);
 
     virtual void onAudioEffectFinished(int effectId, int code);
 
@@ -400,6 +425,7 @@ private:
     PFN_TRYTORECONNECT           m_tryToReconnect;
     PFN_CONNECTIONRECOVERY       m_connectionRecovery;
     PFN_SPEEDTEST                m_speedTest;
+    PFN_SPEEDTESTRESULT          m_speedTestResult;
     PFN_CAMERADIDREADY           m_cameraDidReady;
     PFN_MICDIDREADY              m_micDidReady;
     PFN_DEVICECHANGE             m_deviceChange;
@@ -415,6 +441,10 @@ private:
     PFN_STARTPUBLISHCDNSTREAM    m_startPublishCDNStream;
     PFN_STOPPUBLISHCDNSTREAM     m_stopPublishCDNStream;
     PFN_SETMIXTRANSCODINGCONFIG  m_setMixTranscodingConfig;
+    PFN_STARTPUBLISHMEDIASTREAM  m_startPublishMediaStream;
+    PFN_UPDATEPUBLISHMEDIASTREAM m_updatePublishMediaStream;
+    PFN_STOPPUBLISHMEDIASTREAM   m_stopPublishMediaStream;
+    PFN_CDNSTREAMSTATECHANGED    m_cdnStreamStateChanged;
     PFN_AUDIOEFFECTFINISHED      m_audioEffectFinished;
     PFN_SCREENCAPTURECOVERED     m_screenCaptureCovered;
     PFN_SCREENCAPTURESTARTED     m_screenCaptureStarted;

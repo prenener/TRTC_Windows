@@ -4,6 +4,7 @@
 #include "cli/TXLiteAVCode.h"
 #include "cli/TRTC/ITRTCCloud.h"
 #include "cli/ITRTCDeviceManager.h"
+#include "TRTCScreenCaptureSourceListImpl.h"
 #include "TRTCCloudCallback.h"
 
 #include <assert.h>
@@ -87,80 +88,6 @@ namespace ManageLiteAV
         }
     private:
         liteav::ITRTCDeviceInfo* device_info_;
-    };
-
-    ref class TRTCScreenCaptureSourceListImpl : ITRTCScreenCaptureSourceList
-    {
-    public:
-        ~TRTCScreenCaptureSourceListImpl() {}
-
-        void setScreenCaptureSourceList(liteav::ITRTCScreenCaptureSourceList* pointer)
-        {
-            m_screenCaptureSourceList = pointer;
-        }
-
-        virtual UInt32 getCount()
-        {
-            if (nullptr != m_screenCaptureSourceList)
-                return m_screenCaptureSourceList->getCount();
-            else
-                return 0;
-        }
-
-        virtual TRTCScreenCaptureSourceInfo^ getSourceInfo(UInt32 index)
-        {
-            if (nullptr != m_screenCaptureSourceList)
-            {
-                liteav::TRTCScreenCaptureSourceInfo info = m_screenCaptureSourceList->getSourceInfo(index);
-                TRTCScreenCaptureSourceInfo^ temp = gcnew TRTCScreenCaptureSourceInfo();
-                temp->type = static_cast<TRTCScreenCaptureSourceType>(info.type);
-                temp->sourceId = IntPtr(info.sourceId);
-                temp->sourceName = Utils::CharPtrToString(info.sourceName);
-                temp->isMainScreen = info.isMainScreen;
-                temp->isMinmizeWindow = info.isMinimizeWindow;
-                TRTCImageBuffer^ thumbTemp = gcnew TRTCImageBuffer();
-                array<Byte>^ thumbArray;
-                if (info.thumbBGRA.length <= 0)
-                    thumbArray = gcnew array<Byte>(0);
-                thumbArray = gcnew array<Byte>(info.thumbBGRA.length);
-                for (unsigned int i = 0; i < info.thumbBGRA.length; i++)
-                {
-                    thumbArray[i] = info.thumbBGRA.buffer[i];
-                }
-                thumbTemp->buffer = thumbArray;
-                thumbTemp->height = info.thumbBGRA.height;
-                thumbTemp->length = info.thumbBGRA.length;
-                thumbTemp->width = info.thumbBGRA.width;
-                TRTCImageBuffer^ iconTemp = gcnew TRTCImageBuffer();
-                array<Byte>^ iconArray;
-                if (info.iconBGRA.length <= 0)
-                    iconArray = gcnew array<Byte>(0);
-                iconArray = gcnew array<Byte>(info.iconBGRA.length);
-                for (unsigned int i = 0; i < info.iconBGRA.length; i++)
-                {
-                    iconArray[i] = info.iconBGRA.buffer[i];
-                }
-                iconTemp->buffer = iconArray;
-                iconTemp->height = info.iconBGRA.height;
-                iconTemp->length = info.iconBGRA.length;
-                iconTemp->width = info.iconBGRA.width;
-                temp->thumbBGRA = thumbTemp;
-                temp->iconBGRA = iconTemp;
-                return temp;
-            }
-            else
-            {
-                return nullptr;
-            }
-        }
-
-        virtual void release()
-        {
-            if (nullptr != m_screenCaptureSourceList)
-                m_screenCaptureSourceList->release();
-        }
-    private:
-        liteav::ITRTCScreenCaptureSourceList* m_screenCaptureSourceList;
     };
 
     ITRTCCloud::ITRTCCloud()
@@ -408,6 +335,11 @@ namespace ManageLiteAV
                 if (m_speedTestDelegate == nullptr)
                     m_speedTestDelegate = gcnew SpeedTestDelegate(this, &ITRTCCloud::onSpeedTest);
                 m_callbackImpl->setSpeedTest((PFN_SPEEDTEST)Marshal::GetFunctionPointerForDelegate(m_speedTestDelegate).ToPointer());
+                if (m_speedTestResultDelegate == nullptr)
+                {
+                    m_speedTestResultDelegate = gcnew SpeedTestResultDelegate(this,&ITRTCCloud::onSpeedTestResult);
+                }
+                m_callbackImpl->setSpeedTestResult((PFN_SPEEDTESTRESULT)Marshal::GetFunctionPointerForDelegate(m_speedTestResultDelegate).ToPointer());
                 if (m_cameraDidReadyDelegate == nullptr)
                     m_cameraDidReadyDelegate = gcnew CameraDidReadyDelegate(this, &ITRTCCloud::onCameraDidReady);
                 m_callbackImpl->setCameraDidReady((PFN_CAMERADIDREADY)Marshal::GetFunctionPointerForDelegate(m_cameraDidReadyDelegate).ToPointer());
@@ -455,6 +387,31 @@ namespace ManageLiteAV
                 if (m_setMixTranscodingConfigDelegate == nullptr)
                     m_setMixTranscodingConfigDelegate = gcnew SetMixTranscodingConfigDelegate(this, &ITRTCCloud::onSetMixTranscodingConfig);
                 m_callbackImpl->setSetMixTranscodingConfig((PFN_SETMIXTRANSCODINGCONFIG)Marshal::GetFunctionPointerForDelegate(m_setMixTranscodingConfigDelegate).ToPointer());
+                
+                if (m_startPublishMediaStreamDelegate == nullptr)
+                {
+                    m_startPublishMediaStreamDelegate = gcnew StartPublishMediaStreamDelegate(this, &ITRTCCloud::onStartPublishMediaStream);
+                }
+                m_callbackImpl->setStartPublishMediaStream((PFN_STARTPUBLISHMEDIASTREAM)Marshal::GetFunctionPointerForDelegate(m_startPublishMediaStreamDelegate).ToPointer());
+
+                if (m_stopPublishMediaStreamDelegate == nullptr)
+                {
+                    m_stopPublishMediaStreamDelegate = gcnew StopPublishMediaStreamDelegate(this, &ITRTCCloud::onStopPublishMediaStream);
+                }
+                m_callbackImpl->setStopPublishMediaStream((PFN_STOPPUBLISHMEDIASTREAM)Marshal::GetFunctionPointerForDelegate(m_stopPublishMediaStreamDelegate).ToPointer());
+
+                if (m_updatePublishMediaStreamDelegate == nullptr)
+                {
+                    m_updatePublishMediaStreamDelegate = gcnew UpdatePublishMediaStreamDelegate(this,&ITRTCCloud::onUpdatePublishMediaStream);
+                }
+                m_callbackImpl->setUpdatePublishMediaStream((PFN_UPDATEPUBLISHMEDIASTREAM)Marshal::GetFunctionPointerForDelegate(m_updatePublishMediaStreamDelegate).ToPointer());
+
+                if (m_cdnStreamStateChangedDelegate == nullptr)
+                {
+                    m_cdnStreamStateChangedDelegate = gcnew CdnStreamStateChangedDelegate(this,&ITRTCCloud::onCdnStreamStateChanged);
+                }
+                m_callbackImpl->setCdnStreamStateChanged((PFN_CDNSTREAMSTATECHANGED)Marshal::GetFunctionPointerForDelegate(m_cdnStreamStateChangedDelegate).ToPointer());
+
                 if (m_audioEffectFinishedDelegate == nullptr)
                     m_audioEffectFinishedDelegate = gcnew AudioEffectFinishedDelegate(this, &ITRTCCloud::onAudioEffectFinished);
                 m_callbackImpl->setAudioEffectFinished((PFN_AUDIOEFFECTFINISHED)Marshal::GetFunctionPointerForDelegate(m_audioEffectFinishedDelegate).ToPointer());
@@ -2062,6 +2019,7 @@ namespace ManageLiteAV
             temp->audioBitrate = config->audioBitrate;
             temp->audioChannels = config->audioChannels;
             temp->audioSampleRate = config->audioSampleRate;
+            temp->audioCodec = config->audioCodec;
             temp->bizId = config->bizId;
             temp->mode = static_cast<::TRTCTranscodingConfigMode>(config->mode);
             temp->videoBitrate = config->videoBitrate;
@@ -2089,6 +2047,9 @@ namespace ManageLiteAV
                 arr[i].zOrder = array[i]->zOrder;
                 arr[i].pureAudio = array[i]->pureAudio;
                 arr[i].streamType = static_cast<::TRTCVideoStreamType>(array[i]->streamType);
+                arr[i].renderMode = array[i]->renderMode;
+                arr[i].soundLevel = array[i]->soundLevel;
+                arr[i].image = Utils::StringToUTF8CharPtr(array[i]->image);
             }
             temp->mixUsersArray = arr;
             m_impl->setMixTranscodingConfig(temp);
@@ -2097,6 +2058,8 @@ namespace ManageLiteAV
                 arr[i].userId = nullptr;
                 delete[] arr[i].roomId;
                 arr[i].roomId = nullptr;
+                delete[] arr[i].image;
+                arr[i].image = nullptr;
             }
             delete[] arr;
             arr = nullptr;
@@ -2106,6 +2069,284 @@ namespace ManageLiteAV
             bg_image = nullptr;
             delete[] streamId;
             streamId = nullptr;
+        }
+    }
+
+    liteav::TRTCPublishTarget* ITRTCCloud::cliToCpp(TRTCPublishTarget^% in, liteav::TRTCPublishTarget* out) {
+        if (in)
+        {
+            liteav::TRTCPublishCdnUrl* CppCdnUrls = nullptr;
+            liteav::TRTCUser* CppUser = nullptr;
+
+            out->mode = static_cast<liteav::TRTCPublishMode>(in->mode);
+            out->cdnUrlListSize = in->cdnUrlListSize;
+
+            if (out->cdnUrlListSize > 0)
+            {
+                CppCdnUrls = new liteav::TRTCPublishCdnUrl[out->cdnUrlListSize];
+                array<TRTCPublishCdnUrl^>^ cdnUrls = in->cdnUrlList;
+                for (uint32_t i = 0; i < out->cdnUrlListSize; i++)
+                {
+                    CppCdnUrls[i].rtmpUrl = Utils::StringToUTF8CharPtr(cdnUrls[i]->rtmpUrl);
+                    CppCdnUrls[i].isInternalLine = cdnUrls[i]->isInternalLine;
+                }
+            }
+            out->cdnUrlList = CppCdnUrls;
+
+            if (in->mixStreamIdentity)
+            {
+                CppUser = new liteav::TRTCUser();
+                CppUser->userId = Utils::StringToUTF8CharPtr(in->mixStreamIdentity->userId);
+                CppUser->intRoomId = in->mixStreamIdentity->intRoomId;
+                CppUser->strRoomId = Utils::StringToUTF8CharPtr(in->mixStreamIdentity->strRoomId);
+            }
+            out->mixStreamIdentity = CppUser;
+        }
+        return out;
+    }
+
+    liteav::TRTCStreamEncoderParam* ITRTCCloud::cliToCpp(TRTCStreamEncoderParam^% in, liteav::TRTCStreamEncoderParam* out) {
+        if (in)
+        {
+            out->audioEncodedChannelNum = in->audioEncodedChannelNum;
+            out->audioEncodedCodecType = in->audioEncodedCodecType;
+            out->audioEncodedKbps = in->audioEncodedKbps;
+            out->audioEncodedSampleRate = in->audioEncodedSampleRate;
+            out->videoEncodedFPS = in->videoEncodedFPS;
+            out->videoEncodedGOP = in->videoEncodedGOP;
+            out->videoEncodedHeight = in->videoEncodedHeight;
+            out->videoEncodedKbps = in->videoEncodedKbps;
+            out->videoEncodedWidth = in->videoEncodedWidth;
+        }
+        return out;
+    }
+
+    liteav::TRTCStreamMixingConfig* ITRTCCloud::cliToCpp(TRTCStreamMixingConfig^% in, liteav::TRTCStreamMixingConfig* out) {
+        if (in)
+        {
+            liteav::TRTCUser* CppUsers = nullptr;
+            liteav::TRTCVideoLayout* CppVideoLayouts = nullptr;
+            liteav::TRTCWatermark* CppWatermarks = nullptr;
+
+            out->audioMixUserListSize = in->audioMixUserListSize;
+
+            if (out->audioMixUserListSize > 0)
+            {
+                CppUsers = new liteav::TRTCUser[out->audioMixUserListSize];
+                array<TRTCUser^>^ User = in->audioMixUserList;
+                for (uint32_t i = 0; i < out->audioMixUserListSize; i++)
+                {
+                    CppUsers[i].intRoomId = User[i]->intRoomId;
+                    CppUsers[i].userId = Utils::StringToUTF8CharPtr(User[i]->userId);
+                    CppUsers[i].strRoomId = Utils::StringToUTF8CharPtr(User[i]->strRoomId);
+                }
+            }
+            out->audioMixUserList = CppUsers;
+            out->backgroundColor = in->backgroundColor;
+            out->backgroundImage = Utils::StringToUTF8CharPtr(in->backgroundImage);
+            out->videoLayoutListSize = in->videoLayoutListSize;
+
+            if (out->videoLayoutListSize > 0)
+            {
+                CppVideoLayouts = new liteav::TRTCVideoLayout[out->videoLayoutListSize];
+                array<TRTCVideoLayout^>^ VideoLayouts = in->videoLayoutList;
+                for (uint32_t i = 0; i < out->videoLayoutListSize; i++)
+                {
+                    CppVideoLayouts[i].backgroundColor = VideoLayouts[i]->backgroundColor;
+                    CppVideoLayouts[i].fillMode = static_cast<liteav::TRTCVideoFillMode>(VideoLayouts[i]->fillMode);
+                    CppVideoLayouts[i].fixedVideoStreamType = static_cast<liteav::TRTCVideoStreamType>(VideoLayouts[i]->fixedVideoStreamType);
+
+                    CppVideoLayouts[i].fixedVideoUser = new liteav::TRTCUser();
+                    CppVideoLayouts[i].fixedVideoUser->intRoomId = VideoLayouts[i]->fixedVideoUser->intRoomId;
+                    CppVideoLayouts[i].fixedVideoUser->userId = Utils::StringToUTF8CharPtr(VideoLayouts[i]->fixedVideoUser->userId);
+                    CppVideoLayouts[i].fixedVideoUser->strRoomId = Utils::StringToUTF8CharPtr(VideoLayouts[i]->fixedVideoUser->strRoomId);
+
+                    CppVideoLayouts[i].placeHolderImage = Utils::StringToUTF8CharPtr(VideoLayouts[i]->placeHolderImage);
+
+                    ::RECT rectTemp;
+                    rectTemp.bottom = VideoLayouts[i]->rect->bottom;
+                    rectTemp.right = VideoLayouts[i]->rect->right;
+                    rectTemp.left = VideoLayouts[i]->rect->left;
+                    rectTemp.top = VideoLayouts[i]->rect->top;
+                    CppVideoLayouts[i].rect = rectTemp;
+                    CppVideoLayouts[i].zOrder = VideoLayouts[i]->zOrder;
+                }
+            }
+            out->videoLayoutList = CppVideoLayouts;
+            out->watermarkListSize = in->watermarkListSize;
+            if (out->watermarkListSize > 0)
+            {
+                CppWatermarks = new liteav::TRTCWatermark[out->watermarkListSize];
+                array<TRTCWatermark^>^ Watermarks = in->watermarkList;
+                for (uint32_t i = 0; i < out->watermarkListSize; i++)
+                {
+                    CppWatermarks[i].watermarkUrl = Utils::StringToUTF8CharPtr(Watermarks[i]->watermarkUrl);
+                    CppWatermarks[i].zOrder = Watermarks[i]->zOrder;
+                    ::RECT rectTemp;
+                    rectTemp.bottom = Watermarks[i]->rect->bottom;
+                    rectTemp.right = Watermarks[i]->rect->right;
+                    rectTemp.left = Watermarks[i]->rect->left;
+                    rectTemp.top = Watermarks[i]->rect->top;
+                    CppWatermarks[i].rect = rectTemp;
+                }
+            }
+            out->watermarkList = CppWatermarks;
+        }
+        return out;
+    }
+
+    void ITRTCCloud::releaseCpp(liteav::TRTCPublishTarget* target) {
+        if (target)
+        {
+            liteav::TRTCPublishCdnUrl* CppCdnUrls = target->cdnUrlList;
+            liteav::TRTCUser* CppUser = target->mixStreamIdentity;
+            if (CppUser)
+            {
+                if (CppUser->userId)
+                {
+                    delete[] CppUser->userId;
+                }
+                if (CppUser->strRoomId)
+                {
+                    delete[] CppUser->strRoomId;
+                }
+                delete CppUser;
+                CppUser = nullptr;
+            }
+
+            if (CppCdnUrls)
+            {
+                for (uint32_t i = 0; i < target->cdnUrlListSize; i++)
+                {
+                    if (CppCdnUrls[i].rtmpUrl)
+                    {
+                        delete[] CppCdnUrls[i].rtmpUrl;
+                    }
+                }
+                delete CppCdnUrls;
+                CppCdnUrls = nullptr;
+            }
+        }
+    }
+
+    void ITRTCCloud::releaseCpp(liteav::TRTCStreamMixingConfig* config) {
+        if (config)
+        {
+            liteav::TRTCUser* CppUsers = config->audioMixUserList;
+            liteav::TRTCVideoLayout* CppVideoLayouts = config->videoLayoutList;
+            liteav::TRTCWatermark* CppWatermarks = config->watermarkList;
+            if (CppUsers)
+            {
+                for (uint32_t i = 0; i < config->audioMixUserListSize; i++)
+                {
+                    if (CppUsers[i].userId)
+                    {
+                        delete[] CppUsers[i].userId;
+                    }
+                    if (CppUsers[i].strRoomId)
+                    {
+                        delete[] CppUsers[i].strRoomId;
+                    }
+                }
+                delete CppUsers;
+                CppUsers = nullptr;
+            }
+
+            if (CppVideoLayouts)
+            {
+                for (uint32_t i = 0; i < config->videoLayoutListSize; i++)
+                {
+
+                    if (CppVideoLayouts[i].fixedVideoUser)
+                    {
+                        if (CppVideoLayouts[i].fixedVideoUser->userId)
+                        {
+                            delete[] CppVideoLayouts[i].fixedVideoUser->userId;
+                        }
+                        if (CppVideoLayouts[i].fixedVideoUser->strRoomId)
+                        {
+                            delete[] CppVideoLayouts[i].fixedVideoUser->strRoomId;
+                        }
+                        delete CppVideoLayouts[i].fixedVideoUser;
+                    }
+
+                    if (CppVideoLayouts[i].placeHolderImage)
+                    {
+                        delete[] CppVideoLayouts[i].placeHolderImage;
+                    }
+                }
+                delete CppVideoLayouts;
+                CppVideoLayouts = nullptr;
+            }
+
+            if (CppWatermarks)
+            {
+                for (uint32_t i = 0; i < config->watermarkListSize; i++)
+                {
+                    if (CppWatermarks[i].watermarkUrl)
+                    {
+                        delete[] CppWatermarks[i].watermarkUrl;
+                    }
+                }
+                delete CppWatermarks;
+                CppWatermarks = nullptr;
+            }
+        }
+    }
+
+    void ITRTCCloud::startPublishMediaStream(TRTCPublishTarget^% target, TRTCStreamEncoderParam^% params, TRTCStreamMixingConfig^% config){
+        if (nullptr != m_impl)
+        {
+            liteav::TRTCPublishTarget CppTarget;
+            cliToCpp(target, &CppTarget);
+
+            liteav::TRTCStreamEncoderParam CppParams;
+            cliToCpp(params, &CppParams);
+            
+            liteav::TRTCStreamMixingConfig CppConfig;
+            cliToCpp(config, &CppConfig);
+
+            m_impl->startPublishMediaStream(&CppTarget, &CppParams, &CppConfig);
+
+            releaseCpp(&CppTarget);
+            releaseCpp(&CppConfig);
+        }
+    }
+
+    void ITRTCCloud::updatePublishMediaStream(String^ taskId, TRTCPublishTarget^% target, TRTCStreamEncoderParam^% params, TRTCStreamMixingConfig^% config) {
+        if (nullptr != m_impl)
+        {
+            char* CppTaskId = Utils::StringToUTF8CharPtr(taskId);
+
+            liteav::TRTCPublishTarget CppTarget;
+            cliToCpp(target, &CppTarget);
+            
+            liteav::TRTCStreamEncoderParam CppParams;
+            cliToCpp(params, &CppParams);
+
+            liteav::TRTCStreamMixingConfig CppConfig;
+            cliToCpp(config, &CppConfig);
+
+            m_impl->updatePublishMediaStream(CppTaskId, &CppTarget, &CppParams, &CppConfig);
+
+            if (CppTaskId)
+            {
+                delete[] CppTaskId;
+            }
+            releaseCpp(&CppTarget);
+            releaseCpp(&CppConfig);
+        }
+    }
+
+    void ITRTCCloud::stopPublishMediaStream(String^ taskId) {
+        if (nullptr != m_impl)
+        {
+            char * CppTaskId = Utils::StringToUTF8CharPtr(taskId);
+            m_impl->stopPublishMediaStream(CppTaskId);
+            if (CppTaskId)
+            {
+                delete[] CppTaskId;
+            }
         }
     }
 
@@ -2705,16 +2946,40 @@ namespace ManageLiteAV
         if (list == nullptr) return;
         if (m_callbacks->Count == 0) return;
         TRTCSpeedTestResult^ temp = gcnew TRTCSpeedTestResult();
+        temp->success = currentResult.success;
         temp->downLostRate = currentResult.downLostRate;
         temp->ip = Utils::CharPtrToString(currentResult.ip);
+        temp->errMsg = Utils::CharPtrToString(currentResult.errMsg);
         temp->quality = static_cast<TRTCQuality>(currentResult.quality);
         temp->rtt = currentResult.rtt;
         temp->upLostRate = currentResult.upLostRate;
+        temp->availableUpBandwidth = currentResult.availableUpBandwidth;
+        temp->availableDownBandwidth = currentResult.availableDownBandwidth;
         int count = list->Count;
         for (int i = 0; i < count; i++)
         {
             if (list[i] != nullptr)
                 list[i]->onSpeedTest(temp, finishedCount, totalCount);
+        }
+    }
+
+    void ITRTCCloud::onSpeedTestResult(const liteav::TRTCSpeedTestResult& result) {
+        List<ITRTCCloudCallback^>^ list = copyTRTCCallbackList();
+
+        TRTCSpeedTestResult^ temp = gcnew TRTCSpeedTestResult();
+        temp->success = result.success;
+        temp->downLostRate = result.downLostRate;
+        temp->ip = Utils::CharPtrToString(result.ip);
+        temp->errMsg = Utils::CharPtrToString(result.errMsg);
+        temp->quality = static_cast<TRTCQuality>(result.quality);
+        temp->rtt = result.rtt;
+        temp->upLostRate = result.upLostRate;
+        temp->availableUpBandwidth = result.availableUpBandwidth;
+        temp->availableDownBandwidth = result.availableDownBandwidth;
+        for (int i = 0; i < list->Count; i++)
+        {
+            if (list[i] != nullptr)
+                list[i]->onSpeedTestResult(temp);
         }
     }
 
@@ -2912,6 +3177,51 @@ namespace ManageLiteAV
                 list[i]->onSetMixTranscodingConfig(errCode, Utils::CharPtrToString(errMsg));
         }
     }
+
+    void ITRTCCloud::onStartPublishMediaStream(const char* taskId, int code, const char* message, void* extraInfo) {
+        List<ITRTCCloudCallback^>^ list = copyTRTCCallbackList();
+        if (list == nullptr) return;
+        int count = list->Count;
+        for (int i = 0; i < count; i++)
+        {
+            if (list[i] != nullptr)
+                list[i]->onStartPublishMediaStream(Utils::CharPtrToString(taskId), code, Utils::CharPtrToString(message), IntPtr(extraInfo));
+        }
+    }
+
+    void ITRTCCloud::onUpdatePublishMediaStream(const char* taskId, int code, const char* message, void* extraInfo) {
+        List<ITRTCCloudCallback^>^ list = copyTRTCCallbackList();
+        if (list == nullptr) return;
+        int count = list->Count;
+        for (int i = 0; i < count; i++)
+        {
+            if (list[i] != nullptr)
+                list[i]->onUpdatePublishMediaStream(Utils::CharPtrToString(taskId), code, Utils::CharPtrToString(message), IntPtr(extraInfo));
+        }
+    }
+
+    void ITRTCCloud::onStopPublishMediaStream(const char* taskId, int code, const char* message, void* extraInfo) {
+        List<ITRTCCloudCallback^>^ list = copyTRTCCallbackList();
+        if (list == nullptr) return;
+        int count = list->Count;
+        for (int i = 0; i < count; i++)
+        {
+            if (list[i] != nullptr)
+                list[i]->onStopPublishMediaStream(Utils::CharPtrToString(taskId), code, Utils::CharPtrToString(message), IntPtr(extraInfo));
+        }
+    }
+
+    void ITRTCCloud::onCdnStreamStateChanged(const char* cdnUrl, int status, int code, const char* msg, void* extraInfo) {
+        List<ITRTCCloudCallback^>^ list = copyTRTCCallbackList();
+        if (list == nullptr) return;
+        int count = list->Count;
+        for (int i = 0; i < count; i++)
+        {
+            if (list[i] != nullptr)
+                list[i]->onCdnStreamStateChanged(Utils::CharPtrToString(cdnUrl), status, code, Utils::CharPtrToString(msg), IntPtr(extraInfo));
+        }
+    }
+
 
     void ITRTCCloud::onAudioEffectFinished(int effectId, int code)
     {

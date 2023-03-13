@@ -351,6 +351,32 @@ namespace ManageLiteAV
         /// </remarks>
         /// <param name="config">请参考 TRTCCloudDef.h 中关于 TRTCTranscodingConfig 的介绍。如果传入 NULL 取消云端混流转码。</param>
         void setMixTranscodingConfig(TRTCTranscodingConfig^ config);
+
+        /// <summary>
+        /// 2.6 开始发布媒体流
+        /// 接口会向 TRTC 服务器发送指令，要求其将当前用户的音视频流转推/转码到直播 CDN 或者回推到 TRTC 房间中您可以通过 {@link TRTCPublishTarget} 配置中的 {@link TRTCPublishMode} 指定具体的发布模式
+        /// </summary>
+        /// <param name="target">媒体流发布的目标地址，具体配置参考 {@link TRTCPublishTarget}。支持转推/转码到腾讯或者第三方 CDN，也支持转码回推到 TRTC 房间中。</param>
+        /// <param name="params">媒体流编码输出参数，具体配置参考 {@link TRTCStreamEncoderParam}。转码和回推到 TRTC 房间中时为必填项，您需要指定您预期的转码输出参数。在转推时，为了更好的转推稳定性和 CDN 兼容性，也建议您进行配置。</param>
+        /// <param name="config">媒体流转码配置参数。具体配置参考 {@link TRTCStreamMixingConfig}。转码和回推到 TRTC 房间中时为必填项，您需要指定您预期的转码配置参数。转推模式下则无效。</param>
+        void startPublishMediaStream(TRTCPublishTarget^% target, TRTCStreamEncoderParam^% params, TRTCStreamMixingConfig^% config);
+
+        /// <summary>
+        /// 2.7 更新发布媒体流
+        /// 该接口会向 TRTC 服务器发送指令，更新通过 {@link startPublishMediaStream} 启动的媒体流
+        /// </summary>
+        /// <param name="taskId">通过回调 {@link onStartPublishMediaStream} 带给您后台启动的任务标识（即 taskId）</param>
+        /// <param name="target">媒体流发布的目标地址，具体配置参考 {@link TRTCPublishTarget}。支持转推/转码到腾讯或者第三方 CDN，也支持转码回推到 TRTC 房间中。</param>
+        /// <param name="params">媒体流编码输出参数，具体配置参考 {@link TRTCStreamEncoderParam}。转码和回推到 TRTC 房间中时为必填项，您需要指定您预期的转码输出参数。在转推时，为了更好的转推稳定性和 CDN 兼容性，也建议您进行配置。</param>
+        /// <param name="config">媒体流转码配置参数。具体配置参考 {@link TRTCStreamMixingConfig}。转码和回推到 TRTC 房间中时为必填项，您需要指定您预期的转码配置参数。转推模式下则无效。</param>
+        void updatePublishMediaStream(String^ taskId, TRTCPublishTarget^% target, TRTCStreamEncoderParam^% params, TRTCStreamMixingConfig^% config);
+        
+        /// <summary>
+        /// 2.8 停止发布媒体流
+        /// 该接口会向 TRTC 服务器发送指令，停止通过 {@link startPublishMediaStream} 启动的媒体流
+        /// </summary>
+        /// <param name="taskId">taskId 通过回调 {@link onStartPublishMediaStream} 带给您后台启动的任务标识（即 taskId）</param>
+        void stopPublishMediaStream(String^ taskId);
         /// @}
 
         /////////////////////////////////////////////////////////////////////////////////
@@ -1899,6 +1925,7 @@ namespace ManageLiteAV
         delegate void TryToReconnectDelegate();
         delegate void ConnectionRecoveryDelegate();
         delegate void SpeedTestDelegate(const liteav::TRTCSpeedTestResult& currentResult, unsigned int finishedCount, unsigned int totalCount);
+        delegate void SpeedTestResultDelegate(const liteav::TRTCSpeedTestResult& currentResult);
         delegate void CameraDidReadyDelegate();
         delegate void MicDidReadyDelegate();
         delegate void DeviceChangeDelegate(const char* deviceId, liteav::TRTCDeviceType type, liteav::TRTCDeviceState state);
@@ -1914,6 +1941,10 @@ namespace ManageLiteAV
         delegate void StartPublishCDNStreamDelegate(int errCode, const char* errMsg);
         delegate void StopPublishCDNStreamDelegate(int errCode, const char* errMsg);
         delegate void SetMixTranscodingConfigDelegate(int errCode, const char* errMsg);
+        delegate void StartPublishMediaStreamDelegate(const char* taskId, int code, const char* message, void* extraInfo);
+        delegate void UpdatePublishMediaStreamDelegate(const char* taskId, int code, const char* message, void* extraInfo);
+        delegate void StopPublishMediaStreamDelegate(const char* taskId, int code, const char* message, void* extraInfo);
+        delegate void CdnStreamStateChangedDelegate(const char* cdnUrl, int status, int code, const char* msg, void* extraInfo);
         delegate void AudioEffectFinishedDelegate(int effectId, int code);
         delegate void ScreenCaptureCoveredDelegate();
         delegate void ScreenCaptureStartedDelegate();
@@ -1955,6 +1986,7 @@ namespace ManageLiteAV
         void onTryToReconnect();
         void onConnectionRecovery();
         void onSpeedTest(const liteav::TRTCSpeedTestResult& currentResult, unsigned int finishedCount, unsigned int totalCount);
+        void onSpeedTestResult(const liteav::TRTCSpeedTestResult& result);
         void onCameraDidReady();
         void onMicDidReady();
         void onDeviceChange(const char* deviceId, liteav::TRTCDeviceType type, liteav::TRTCDeviceState state);
@@ -1970,6 +2002,10 @@ namespace ManageLiteAV
         void onStartPublishCDNStream(int errCode, const char* errMsg);
         void onStopPublishCDNStream(int errCode, const char* errMsg);
         void onSetMixTranscodingConfig(int errCode, const char* errMsg);
+        void onStartPublishMediaStream(const char* taskId, int code, const char* message, void* extraInfo);
+        void onUpdatePublishMediaStream(const char* taskId, int code, const char* message, void* extraInfo);
+        void onStopPublishMediaStream(const char* taskId, int code, const char* message, void* extraInfo);
+        void onCdnStreamStateChanged(const char* cdnUrl, int status, int code, const char* msg, void* extraInfo);
         void onAudioEffectFinished(int effectId, int code);
         void onScreenCaptureCovered();
         void onScreenCaptureStarted();
@@ -2009,6 +2045,16 @@ namespace ManageLiteAV
         ITRTCCloud(bool useless);
 
         List<ITRTCCloudCallback^>^ copyTRTCCallbackList();
+
+        liteav::TRTCPublishTarget* cliToCpp(TRTCPublishTarget^% in, liteav::TRTCPublishTarget* out);
+
+        liteav::TRTCStreamEncoderParam* cliToCpp(TRTCStreamEncoderParam^% in, liteav::TRTCStreamEncoderParam* out);
+
+        liteav::TRTCStreamMixingConfig* cliToCpp(TRTCStreamMixingConfig^% in, liteav::TRTCStreamMixingConfig* out);
+
+        void releaseCpp(liteav::TRTCPublishTarget* target);
+
+        void releaseCpp(liteav::TRTCStreamMixingConfig* config);
     private:
         static ITRTCCloud^ sInstance;
         static Object^ slocker = gcnew Object();
@@ -2065,6 +2111,7 @@ namespace ManageLiteAV
         TryToReconnectDelegate^ m_tryToReconnectDelegate;
         ConnectionRecoveryDelegate^ m_connectionRecoveryDelegate;
         SpeedTestDelegate^ m_speedTestDelegate;
+        SpeedTestResultDelegate^ m_speedTestResultDelegate;
         CameraDidReadyDelegate^ m_cameraDidReadyDelegate;
         MicDidReadyDelegate^ m_micDidReadyDelegate;
         DeviceChangeDelegate^ m_deviceChangeDelegate;
@@ -2080,6 +2127,10 @@ namespace ManageLiteAV
         StartPublishCDNStreamDelegate^ m_startPublishCDNStreamDelegate;
         StopPublishCDNStreamDelegate^ m_stopPublishCDNStreamDelegate;
         SetMixTranscodingConfigDelegate^ m_setMixTranscodingConfigDelegate;
+        StartPublishMediaStreamDelegate^ m_startPublishMediaStreamDelegate;
+        UpdatePublishMediaStreamDelegate^m_updatePublishMediaStreamDelegate;
+        StopPublishMediaStreamDelegate^  m_stopPublishMediaStreamDelegate;
+        CdnStreamStateChangedDelegate^   m_cdnStreamStateChangedDelegate;
         AudioEffectFinishedDelegate^ m_audioEffectFinishedDelegate;
         ScreenCaptureCoveredDelegate^ m_screenCaptureCoveredDelegate;
         ScreenCaptureStartedDelegate^ m_screenCaptureStartedDelegate;

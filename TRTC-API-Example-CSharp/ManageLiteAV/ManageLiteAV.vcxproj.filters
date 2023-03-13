@@ -99,6 +99,12 @@
     <ClInclude Include="Live\V2TXLivePusherObserverImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="cli\TXLiteAVLocalRecord.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TRTCScreenCaptureSourceListImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp">
@@ -151,6 +157,12 @@
     </ClCompile>
     <ClCompile Include="Live\V2TXLivePusherObserverImpl.cpp">
       <Filter>Source Files\Live</Filter>
+    </ClCompile>
+    <ClCompile Include="TXLiteAVLocalRecord.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TRTCScreenCaptureSourceListImpl.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

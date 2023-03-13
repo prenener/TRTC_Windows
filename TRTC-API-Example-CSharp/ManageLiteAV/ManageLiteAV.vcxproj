@@ -29,7 +29,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -239,11 +239,13 @@ copy /Y "$(ProjectDir)thirdparty\liteav\CPlusPlus\Win64\lib\*.dll"  "$(ProjectDi
     <ClInclude Include="cli\TRTC\TRTCStatistics.h" />
     <ClInclude Include="cli\TXLiteAVBase.h" />
     <ClInclude Include="cli\TXLiteAVCode.h" />
+    <ClInclude Include="cli\TXLiteAVLocalRecord.h" />
     <ClInclude Include="cli\Vod\ITXVodPlayer.h" />
     <ClInclude Include="crashdump.h" />
     <ClInclude Include="Live\V2TXLivePlayerObserverImpl.h" />
     <ClInclude Include="Live\V2TXLivePusherObserverImpl.h" />
     <ClInclude Include="TRTCCloudCallback.h" />
+    <ClInclude Include="TRTCScreenCaptureSourceListImpl.h" />
     <ClInclude Include="TXDeviceObserver.h" />
     <ClInclude Include="TXVodPlayerCallback.h" />
     <ClInclude Include="Utils.h" />
@@ -258,11 +260,13 @@ copy /Y "$(ProjectDir)thirdparty\liteav\CPlusPlus\Win64\lib\*.dll"  "$(ProjectDi
     <ClCompile Include="Live\V2TXLivePusher.cpp" />
     <ClCompile Include="Live\V2TXLivePusherObserverImpl.cpp" />
     <ClCompile Include="TRTCCloudCallback.cpp" />
+    <ClCompile Include="TRTCScreenCaptureSourceListImpl.cpp" />
     <ClCompile Include="TXDeviceManager.cpp" />
     <ClCompile Include="TRTCAudioEffectManager.cpp" />
     <ClCompile Include="TRTCCloud.cpp" />
     <ClCompile Include="TXDeviceObserver.cpp" />
     <ClCompile Include="TXLiteAVBase.cpp" />
+    <ClCompile Include="TXLiteAVLocalRecord.cpp" />
     <ClCompile Include="TXVodPlayer.cpp" />
     <ClCompile Include="TXVodPlayerCallback.cpp" />
     <ClCompile Include="V2TXLiveDef.cpp" />

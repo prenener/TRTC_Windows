@@ -295,6 +295,12 @@ namespace ManageLiteAV
         /// <param name="finishedCount">已完成测速的服务器数量</param>
         /// <param name="totalCount">需要测速的服务器总数量</param>
         void onSpeedTest(TRTCSpeedTestResult^ currentResult, UInt32 finishedCount, UInt32 totalCount);
+
+        /// <summary>
+        /// 5.5 服务器宽带测速的回调，SDK 对本地宽带的上下能力进行测速接口的回调
+        /// </summary>
+        /// <param name="result">网速测试数据数据，包括丢包、往返延迟、上下行的带宽速率，详情请参见 {@link TRTCSpeedTestResult}。</param>
+        void onSpeedTestResult(const TRTCSpeedTestResult^ result);
         /// @}
 
         /////////////////////////////////////////////////////////////////////////////////
@@ -470,6 +476,57 @@ namespace ManageLiteAV
         /// <param name="errCode">0表示成功，其余值表示失败</param>
         /// <param name="errMsg">具体错误原因</param>
         void onSetMixTranscodingConfig(int errCode, String^ errMsg);
+
+        /// <summary>
+        /// 8.6 开始发布媒体流的事件回调
+        /// 当您调用 {@link startPublishMediaStream} 开始向 TRTC 后台服务发布媒体流时，SDK 会立刻将这一指令同步给云端服务器，随后 SDK 会收到来自云端服务器的处理结果，并将指令的执行结果通过本事件回调通知给您。 
+        /// </summary>
+        /// <param name="taskId">taskId 当请求成功时，TRTC 后台会在回调中提供给您这项任务的 taskId，后续您可以通过该 taskId 结合 {@link updatePublishMediaStream} 和 {@link stopPublishMediaStream} 进行更新和停止。</param>
+        /// <param name="code">code 回调结果，0 表示成功，其余值表示失败。</param>
+        /// <param name="message">具体回调信息。</param>
+        /// <param name="extraInfo">扩展信息字段，个别错误码可能会带额外的信息帮助定位问题。</param>
+        void onStartPublishMediaStream(String^ taskId, Int32 code, String^ message, IntPtr extraInfo);
+
+        /// <summary>
+        /// 8.7 更新媒体流的事件回调
+        /// 当您调用媒体流发布接口 ({@link updatePublishMediaStream}) 开始向 TRTC 后台服务更新媒体流时，SDK 会立刻将这一指令同步给云端服务器，随后 SDK 会收到来自云端服务器的处理结果，并将指令的执行结果通过本事件回调通知给您。
+        /// </summary>
+        /// <param name="taskId">您调用媒体流发布接口 ({@link updatePublishMediaStream}) 时传入的 taskId，会通过此回调再带回给您，用于标识该回调属于哪一次更新请求。</param>
+        /// <param name="code">回调结果，0 表示成功，其余值表示失败。</param>
+        /// <param name="message">具体回调信息。</param>
+        /// <param name="extraInfo">扩展信息字段，个别错误码可能会带额外的信息帮助定位问题。</param>
+        void onUpdatePublishMediaStream(String^ taskId, Int32 code, String^ message, IntPtr extraInfo);
+
+        /// <summary>
+        /// 8.8 停止媒体流的事件回调
+        /// 当您调用停止发布媒体流 ({@link stopPublishMediaStream}) 开始向 TRTC 后台服务停止媒体流时，SDK 会立刻将这一指令同步给云端服务器，随后 SDK 会收到来自云端服务器的处理结果，并将指令的执行结果通过本事件回调通知给您。
+        /// </summary>
+        /// <param name="taskId">您调用停止发布媒体流 ({@link stopPublishMediaStream}) 时传入的 taskId，会通过此回调再带回给您，用于标识该回调属于哪一次停止请求。</param>
+        /// <param name="code">回调结果，0 表示成功，其余值表示失败。</param>
+        /// <param name="message">具体回调信息。</param>
+        /// <param name="extraInfo">扩展信息字段，个别错误码可能会带额外的信息帮助定位问题。</param>
+        void onStopPublishMediaStream(String^ taskId, Int32 code, String^ message, IntPtr extraInfo);
+
+        /// <summary>
+        /// 8.9 RTMP/RTMPS 推流状态发生改变回调
+        /// 当您调用 {@link startPublishMediaStream} 开始向 TRTC 后台服务发布媒体流时，SDK 会立刻将这一指令同步给云端服务。
+        /// 若您在目标推流配置({ @link TRTCPublishTarget }) 设置了向腾讯或者第三方 CDN 上发布音视频流的 URL 配置，则具体 RTMP 或者 RTMPS 推流状态将通过此回调同步给您。
+        /// </summary>
+        /// <param name="cdnUrl">cdnUrl 您调用 {@link startPublishMediaStream} 时通过目标推流配置 ({@link TRTCPublishTarget}) 传入的 url，在推流状态变更时，会通过此回调同步给您。</param>
+        /// <param name="status">
+        /// 推流状态。
+        /// -0：推流未开始或者已结束。在您调用{ @link stopPublishMediaStream } 时会返回该状态。
+        /// -1：正在连接 TRTC 服务器和 CDN 服务器。若无法立刻成功，TRTC 后台服务会多次重试尝试推流，并返回该状态（5s回调一次）。如成功进行推流，则进入状态 2；如服务器出错或 60 秒内未成功推流，则进入状态 4。
+        /// -2：CDN 推流正在进行。在成功推流后，会返回该状态。
+        /// -3：TRTC 服务器和 CDN 服务器推流中断，正在恢复。当 CDN 出现异常，或推流短暂中断时，TRTC 后台服务会自动尝试恢复推流，并返回该状态（5s回调一次）。如成功恢复推流，则进入状态 2；如服务器出错或 60 秒内未成功恢复，则进入状态 4。
+        /// -4：TRTC 服务器和 CDN 服务器推流中断，且恢复或连接超时。即此时推流失败，你可以再次调用{ @link updatePublishMediaStream } 尝试推流。
+        /// -5：正在断开 TRTC 服务器和 CDN 服务器。在您调用{ @link stopPublishMediaStream } 时，TRTC 后台服务会依次同步状态 5 和状态 0 
+        /// </param>
+        /// <param name="code">推流结果，0 表示成功，其余值表示出错。</param>
+        /// <param name="msg">具体推流信息</param>
+        /// <param name="extraInfo">扩展信息字段，个别错误码可能会带额外的信息帮助定位问题。</param>
+        void onCdnStreamStateChanged(String^ cdnUrl, Int32 status, Int32 code, String^ msg, IntPtr extraInfo);
+
         /// @}
 
         /////////////////////////////////////////////////////////////////////////////////

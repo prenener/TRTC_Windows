@@ -250,6 +250,10 @@ void TRTCCloudCallbackImpl::setSpeedTest(PFN_SPEEDTEST pointer)
     m_speedTest = pointer;
 }
 
+void TRTCCloudCallbackImpl::setSpeedTestResult(PFN_SPEEDTESTRESULT pointer) {
+    m_speedTestResult = pointer;
+}
+
 void TRTCCloudCallbackImpl::setCameraDidReady(PFN_CAMERADIDREADY pointer)
 {
     m_cameraDidReady = pointer;
@@ -321,6 +325,22 @@ void TRTCCloudCallbackImpl::setStopPublishCDNStream(PFN_STOPPUBLISHCDNSTREAM poi
 void TRTCCloudCallbackImpl::setSetMixTranscodingConfig(PFN_SETMIXTRANSCODINGCONFIG pointer)
 {
     m_setMixTranscodingConfig = pointer;
+}
+
+void TRTCCloudCallbackImpl::setStartPublishMediaStream(PFN_STARTPUBLISHMEDIASTREAM pointer) {
+    m_startPublishMediaStream = pointer;
+}
+
+void TRTCCloudCallbackImpl::setUpdatePublishMediaStream(PFN_UPDATEPUBLISHMEDIASTREAM pointer) {
+    m_updatePublishMediaStream = pointer;
+}
+
+void TRTCCloudCallbackImpl::setStopPublishMediaStream(PFN_STOPPUBLISHMEDIASTREAM pointer) {
+    m_stopPublishMediaStream = pointer;
+}
+
+void TRTCCloudCallbackImpl::setCdnStreamStateChanged(PFN_CDNSTREAMSTATECHANGED pointer) {
+    m_cdnStreamStateChanged = pointer;
 }
 
 void TRTCCloudCallbackImpl::setAudioEffectFinished(PFN_AUDIOEFFECTFINISHED pointer)
@@ -551,6 +571,14 @@ void TRTCCloudCallbackImpl::onSpeedTest(const TRTCSpeedTestResult& currentResult
         m_speedTest(currentResult, finishedCount, totalCount);
 }
 
+void TRTCCloudCallbackImpl::onSpeedTestResult(const TRTCSpeedTestResult& result) {
+    if (nullptr != m_speedTestResult)
+    {
+        m_speedTestResult(result);
+    }
+}
+
+
 void TRTCCloudCallbackImpl::onCameraDidReady()
 {
     if (nullptr != m_cameraDidReady)
@@ -639,6 +667,34 @@ void TRTCCloudCallbackImpl::onSetMixTranscodingConfig(int errCode, const char* e
 {
     if (nullptr != m_setMixTranscodingConfig)
         m_setMixTranscodingConfig(errCode, errMsg);
+}
+
+void TRTCCloudCallbackImpl::onStartPublishMediaStream(const char* taskId, int code, const char* message, void* extraInfo){
+    if (nullptr != m_startPublishMediaStream)
+    {
+        m_startPublishMediaStream(taskId, code, message, extraInfo);
+    }
+}
+
+void TRTCCloudCallbackImpl::onUpdatePublishMediaStream(const char* taskId, int code, const char* message, void* extraInfo) {
+    if (nullptr != m_updatePublishMediaStream)
+    {
+        m_updatePublishMediaStream(taskId, code, message, extraInfo);
+    }
+}
+
+void TRTCCloudCallbackImpl::onStopPublishMediaStream(const char* taskId, int code, const char* message, void* extraInfo) {
+    if (nullptr != m_stopPublishMediaStream)
+    {
+        m_stopPublishMediaStream(taskId, code, message, extraInfo);
+    }
+}
+
+void TRTCCloudCallbackImpl::onCdnStreamStateChanged(const char* cdnUrl, int status, int code, const char* msg, void* extraInfo){
+    if (nullptr != m_cdnStreamStateChanged)
+    {
+        m_cdnStreamStateChanged(cdnUrl, status, code, msg, extraInfo);
+    }
 }
 
 void TRTCCloudCallbackImpl::onAudioEffectFinished(int effectId, int code)
