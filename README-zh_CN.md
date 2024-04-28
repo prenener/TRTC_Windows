@@ -11,26 +11,76 @@ _[English](README.md) | 简体中文_
 
 
 ## 更新日志
-### **Version 10.7 @ 2022.09.20**
+### Version 11.5 @ 2023.11.27
 
-**新特性：**
+#### 功能优化：
+- 全平台：优化视频模块的整体性能及稳定性。
 
-- 全平台：云端混流支持调整每路输入流的音量，详见 [TRTCMixUser](https://cloud.tencent.com/document/product/647/79626#5934a926ba45ac0d5c9bd8632d3d44b5).soundLevel。
-- 全平台：新增了 [onRemoteAudioStatusUpdated](https://cloud.tencent.com/document/product/647/79621#80ffbac8268b90337b6e8d4a8af2f997) 回调接口，可用于更好地识别和监控远端音频流状态。
+- 全平台：优化音频模块的整体稳定性。
 
-**功能优化:** 
+- 全平台：优化部分 API 接口行为策略，详情见接口行为调整。
 
-- 全平台：升级编码内核，提升屏幕分享场景的画质。
-- 全平台：优化弱网下编码码控效果。
+- 全平台：优化音频背景音乐模块整体策略及性能占用，减少背景音乐播放异常的情况。
 
-**缺陷修复:** 
+- Windows：优化 HEVC 硬件解码策略，适配 AMD、Nvidia 显卡。
 
-- iOS：修复 iPad 部分设备采集音量较小的问题。
-- Android：修复偶现连接蓝牙耳机但是声音外放的问题。
-- 全平台：修复频繁进退房场景下偶现的 crash 问题。
+- Windows：优化屏幕共享整体性能，提升屏幕采集帧率及稳定性。
+
+- Android：优化 TRTC + VODPlayer 场景下的播放效果。
+
+- iOS&Mac：优化使用 Metal 进行预处理及渲染的性能。
+
+
+#### 接口行为调整：
+- 全平台：视频设置分辨率为540P竖屏时（预期540x960），具体的编码处理分辨率由544x960调整为536x960。
+
+- 全平台：背景音乐进度回调`onPlayProgress`回调间隔由200ms 调整为300ms。
+
+- 全平台：背景音乐模块内部实现调整为单例，多实例情况下 musicID 需要全局唯一。开发者在使用子实例播放背景音乐时，请确保不同实例使用不同的 musicID。
+
+- 全平台：本地录制事件状态码调整为异步返回，相关接口调用后默认返回 0，具体的状态码通过相应的事件回调获取。
+
+- 全平台：启动录制事件回调`onLocalRecordBegin`调整以下状态码：
+
+<table>
+<tr>
+<td rowspan="1" colSpan="1" ><br>事件</td>
+
+<td rowspan="1" colSpan="1" >11.5 之前版本状态码</td>
+
+<td rowspan="1" colSpan="1" >11.5 版本状态码</td>
+</tr>
+
+<tr>
+<td rowspan="1" colSpan="1" >录制已经启动，需要先停止录制</td>
+
+<td rowspan="1" colSpan="1" >-1</td>
+
+<td rowspan="1" colSpan="1" >-6</td>
+</tr>
+
+<tr>
+<td rowspan="1" colSpan="1" >录制目录无写入权限，请检查目录权限问题</td>
+
+<td rowspan="1" colSpan="1" >-2</td>
+
+<td rowspan="1" colSpan="1" >-8</td>
+</tr>
+
+<tr>
+<td rowspan="1" colSpan="1" >文件后缀名有误（比如不支持的录制格式）</td>
+
+<td rowspan="1" colSpan="1" >-3</td>
+
+<td rowspan="1" colSpan="1" >-2</td>
+</tr>
+</table>
+
+- iOS&Android：优化移动端屏幕共享连续性，在共享暂停时保留发送最后一帧，发送帧率为1 - 2fps。
+
+- iOS&Android：调整重力感应响应行为，只响应重力感应开或者关。
 
 更早期的版本更新历史请点击  [更多](https://cloud.tencent.com/document/product/647/46907)...
-
 
 ## 目录说明
 
